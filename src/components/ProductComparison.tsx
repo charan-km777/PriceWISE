@@ -1,7 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { TrendingDown, TrendingUp, Star, ExternalLink, ShoppingCart, Bell, Package } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { TrendingDown, Star, ExternalLink, ShoppingCart, Bell, Package } from 'lucide-react';
 
 interface Product {
   name: string;
@@ -36,18 +36,19 @@ export function ProductComparison({ searchQuery, onAddToCart, onTrackProduct, is
   const fetchProducts = async () => {
     setLoading(true);
     try {
+      // Updated to point to the local Python FastAPI backend
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-273decf9/search/${encodeURIComponent(searchQuery)}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`
-          }
-        }
+        `http://127.0.0.1:8000/search/${encodeURIComponent(searchQuery)}`
       );
+
+      // Check if the response is valid
+      if (!response.ok) throw new Error('Backend failed');
+
       const data = await response.json();
       setProducts(data.results || []);
     } catch (error) {
       console.error('Error fetching products:', error);
+      // Optional: Add UI error handling here
     } finally {
       setLoading(false);
     }
@@ -85,21 +86,19 @@ export function ProductComparison({ searchQuery, onAddToCart, onTrackProduct, is
           <div className="flex gap-2 mt-4 md:mt-0">
             <button
               onClick={() => setSortBy('price')}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                sortBy === 'price'
+              className={`px-4 py-2 rounded-lg transition-all ${sortBy === 'price'
                   ? 'bg-emerald-500 text-white shadow-md'
                   : 'bg-white text-gray-700 hover:bg-emerald-50 border border-emerald-200'
-              }`}
+                }`}
             >
               Sort by Price
             </button>
             <button
               onClick={() => setSortBy('rating')}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                sortBy === 'rating'
+              className={`px-4 py-2 rounded-lg transition-all ${sortBy === 'rating'
                   ? 'bg-emerald-500 text-white shadow-md'
                   : 'bg-white text-gray-700 hover:bg-emerald-50 border border-emerald-200'
-              }`}
+                }`}
             >
               Sort by Rating
             </button>
@@ -131,11 +130,10 @@ export function ProductComparison({ searchQuery, onAddToCart, onTrackProduct, is
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`relative bg-white backdrop-blur-sm border rounded-xl p-6 hover:scale-105 transition-all shadow-md ${
-                      isCheapest
+                    className={`relative bg-white backdrop-blur-sm border rounded-xl p-6 hover:scale-105 transition-all shadow-md ${isCheapest
                         ? 'border-emerald-500 shadow-lg shadow-emerald-500/30'
                         : 'border-emerald-200 hover:border-emerald-400'
-                    }`}
+                      }`}
                   >
                     {isCheapest && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-4 py-1 rounded-full text-sm flex items-center gap-1">

@@ -18,8 +18,25 @@ import { UserPolicyPage } from './components/pages/UserPolicyPage';
 import { BibliographyPage } from './components/pages/BibliographyPage';
 import { AboutPage } from './components/pages/AboutPage';
 
+// 1. Define and Export the Type for use in other components
+export type PageType = 
+  | 'landing' 
+  | 'home' 
+  | 'cart' 
+  | 'tracking' 
+  | 'login' 
+  | 'signup' 
+  | 'terms' 
+  | 'privacy' 
+  | 'help' 
+  | 'contact' 
+  | 'user-policy' 
+  | 'bibliography' 
+  | 'about';
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'landing' | 'home' | 'cart' | 'tracking' | 'login' | 'signup' | 'terms' | 'privacy' | 'help' | 'contact' | 'user-policy' | 'bibliography' | 'about'>('landing');
+  // 2. Use PageType in useState
+  const [currentPage, setCurrentPage] = useState<PageType>('landing');
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<any[]>([]);
   const [currentProducts, setCurrentProducts] = useState<any[]>([]);
@@ -205,6 +222,11 @@ export default function App() {
     setCurrentPage('home');
   };
 
+  // 3. New Wrapper Function: Solves the type mismatch by casting string -> PageType
+  const handleNavigate = (page: string) => {
+    setCurrentPage(page as PageType);
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'landing':
@@ -277,7 +299,8 @@ export default function App() {
         <Header
           onSearch={handleSearch}
           cartCount={cart.reduce((sum, item) => sum + (item.quantity || 1), 0)}
-          onNavigate={setCurrentPage}
+          // 4. Use the wrapper function here
+          onNavigate={handleNavigate}
           currentPage={currentPage}
           isAuthenticated={!!accessToken}
           onLogout={handleLogout}
@@ -290,7 +313,8 @@ export default function App() {
         {renderPage()}
       </main>
 
-      {showHeaderFooter && <Footer onNavigate={setCurrentPage} />}
+      {/* 5. Use the wrapper function here to fix the Error 2322 */}
+      {showHeaderFooter && <Footer onNavigate={handleNavigate} />}
 
       {accessToken && currentPage !== 'landing' && <AIChat currentProducts={currentProducts} />}
     </div>
